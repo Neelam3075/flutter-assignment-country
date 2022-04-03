@@ -8,24 +8,12 @@ part of 'countries_response.dart';
 
 CountriesResponse _$CountriesResponseFromJson(Map<String, dynamic> json) =>
     CountriesResponse(
-      data: json['data'] == null
-          ? null
-          : CountriesData.fromJson(json['data'] as Map<String, dynamic>),
-    );
-
-Map<String, dynamic> _$CountriesResponseToJson(CountriesResponse instance) =>
-    <String, dynamic>{
-      'data': instance.data,
-    };
-
-CountriesData _$CountriesDataFromJson(Map<String, dynamic> json) =>
-    CountriesData(
       countries: (json['countries'] as List<dynamic>)
           .map((e) => Country.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 
-Map<String, dynamic> _$CountriesDataToJson(CountriesData instance) =>
+Map<String, dynamic> _$CountriesResponseToJson(CountriesResponse instance) =>
     <String, dynamic>{
       'countries': instance.countries,
     };

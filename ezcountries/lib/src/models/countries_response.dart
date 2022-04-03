@@ -2,28 +2,17 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'countries_response.g.dart';
 
+
 @JsonSerializable()
 class CountriesResponse {
-  CountriesData? data;
+  List<Country> countries;
 
-  CountriesResponse({this.data});
+  CountriesResponse({required this.countries});
 
   factory CountriesResponse.fromJson(Map<String, dynamic> json) =>
       _$CountriesResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$CountriesResponseToJson(this);
-}
-
-@JsonSerializable()
-class CountriesData {
-  List<Country> countries;
-
-  CountriesData({required this.countries});
-
-  factory CountriesData.fromJson(Map<String, dynamic> json) =>
-      _$CountriesDataFromJson(json);
-
-  Map<String, dynamic> toJson() => _$CountriesDataToJson(this);
 }
 
 @JsonSerializable()

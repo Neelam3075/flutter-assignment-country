@@ -1,3 +1,5 @@
+import 'package:ezcountries/screens/country/view/country_details_screen.dart';
+import 'package:ezcountries/screens/country/view/country_list_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -24,7 +26,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const CountryDetailsScreen(),
     );
   }
 }

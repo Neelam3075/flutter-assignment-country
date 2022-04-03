@@ -9,5 +9,6 @@ const TextStyle countryDetailsAppBarStyle =
     TextStyle(fontWeight: FontWeight.w400, fontSize: 20, color: appColorBlack);
 
 const TextStyle countryDetailsBodyStyle =
-TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: appColorBlack);
-
+    TextStyle(fontWeight: FontWeight.w400, fontSize: 16, color: appColorBlack);
+const TextStyle dialogHeaderTextStyle =
+    TextStyle(fontWeight: FontWeight.w500, fontSize: 18, color: appColorBlack);

@@ -7,5 +7,7 @@ class Strings {
   static const String search = 'Search' ;
 
   static const String noCountriesFound = 'There is no country to display';
+  static const String enterCountryCode = 'Enter Country Code' ;
+  static const String cancel = 'Cancel' ;
 
 }

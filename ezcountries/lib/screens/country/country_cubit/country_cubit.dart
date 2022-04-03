@@ -40,8 +40,7 @@ class CountryCubit extends Cubit<CountryState> {
   selectCountry(Country? country) {
     emit(state.copyWith(selectedCountry: country));
   }
-
-  _getCountryByCode({required String countryCode}) async {
+  getCountryByCode({required String countryCode}) async {
     await _repo.callGraphQl(
         GraphQlCallbacks(
           onSuccess: (response) {

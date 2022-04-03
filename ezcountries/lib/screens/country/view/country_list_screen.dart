@@ -7,6 +7,7 @@ import 'package:ezcountries/screens/country/country_cubit/country_cubit.dart';
 import 'package:ezcountries/screens/country/view/country_details_screen.dart';
 import 'package:ezcountries/src/models/countries_response.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CountriesScreen extends StatelessWidget {
@@ -15,6 +16,12 @@ class CountriesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            showSearchDialog(context: context);
+          },
+          child: const Icon(Icons.search),
+        ),
         appBar: AppBar(
           centerTitle: true,
           title: const Text(Strings.ezCountries),
@@ -36,7 +43,9 @@ class CountriesScreen extends StatelessWidget {
                   child: TextFormField(
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     autofocus: false,
-                    controller:(state.searchText?.isEmpty?? true)? TextEditingController(text:  state.searchText): null,
+                    controller: (state.searchText?.isEmpty ?? true)
+                        ? TextEditingController(text: state.searchText)
+                        : null,
                     decoration: InputDecoration(
                       prefixIcon: IconButton(
                         padding: const EdgeInsets.all(8),
@@ -111,6 +120,105 @@ class CountriesScreen extends StatelessWidget {
             );
           },
         ));
+  }
+
+  showSearchDialog({
+    required BuildContext context,
+  }) {
+    TextEditingController _searchController = TextEditingController();
+
+    Dialog searchDialog = Dialog(
+      insetPadding: const EdgeInsets.all(26),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      child: SizedBox(
+        height: 280,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(top: 25),
+              child: Text(
+                Strings.enterCountryCode,
+                style: dialogHeaderTextStyle,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Expanded(
+                    child: Text(
+                      Strings.code,
+                      textAlign: TextAlign.center,
+                      style: dialogHeaderTextStyle,
+                    ),
+                  ),
+                  //      SizedBox(width: 15),
+                  Expanded(
+                    flex: 2,
+                    child: TextFormField(
+                      maxLength: 2,
+                      controller: _searchController,
+                      textCapitalization: TextCapitalization.characters,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[A-Z]')),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            //   SizedBox(height: 30),
+            Column(
+              children: [
+                Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: appColorGrey.withOpacity(0.5)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Text(
+                          Strings.cancel,
+                          style: dialogHeaderTextStyle,
+                        ),
+                      ),
+                    ),
+                    Container(
+                        width: 1,
+                        height: 60 + 3,
+                        color: appColorGrey.withOpacity(0.5)),
+                    InkWell(
+                        onTap: () {
+                          context.read<CountryCubit>().getCountryByCode(
+                              countryCode: _searchController.text);
+                          Navigator.pop(context);
+                        },
+                        child: const Padding(
+                            padding: EdgeInsets.all(10),
+                            child: Text(Strings.search,
+                                style: dialogHeaderTextStyle))),
+                  ],
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+    return showDialog(
+        builder: (BuildContext context) {
+          return searchDialog;
+        },
+        context: context);
   }
 
   Widget _getCountriesRow(BuildContext context, Country country, int? index) =>

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:ezcountries/graph_ql/gql_queries.dart';
@@ -19,13 +21,14 @@ class CountryCubit extends Cubit<CountryState> {
         GraphQlCallbacks(
           onSuccess: (response) {
             CountryByCodeResponse countryResponse =
-                CountryByCodeResponse.fromJson(response);
+            CountryByCodeResponse.fromJson(response);
             emit(state.copyWith(
                 countryResponse: countryResponse,
                 isSuccess: true,
                 loading: false));
           },
           onFail: (error) {
+            log('Error: $error');
             emit(state.copyWith(msg: error, isSuccess: false, loading: false));
           },
         ),

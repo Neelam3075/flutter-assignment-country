@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:ezcountries/graph_ql/gql_queries.dart';
@@ -15,26 +17,38 @@ class CountriesCubit extends Cubit<CountriesState> {
 
   final GraphQlRepo _repo;
 
+  List<Country> _sortList(List<Country> countries) {
+    countries.sort((countryA, countryB) {
+      return countryA.name!
+          .toLowerCase()
+          .compareTo(countryB.name!.toLowerCase());
+    });
+    return countries;
+  }
+
   _getCountries() async {
     emit(state.copyWith(loading: true));
     await _repo.callGraphQl(
         GraphQlCallbacks(onSuccess: (response) {
           CountriesResponse countriesResponse =
               CountriesResponse.fromJson(response);
+          List<Country> sortedCountryList =
+              _sortList(countriesResponse.countries);
           emit(state.copyWith(
               countriesResponse: countriesResponse,
               isSuccess: true,
-              filteredList: countriesResponse.countries,
+              filteredList: sortedCountryList,
               loading: false));
         }, onFail: (error) {
           emit(state.copyWith(msg: error, isSuccess: false, loading: false));
-        }),
+        } , ),
         query: queryAllCountries);
   }
 
   filterCountries({String? searchKey}) {
+    List<Country> countryList = _sortList(state.countriesResponse!.countries);
     if (searchKey == null) {
-      emit(state.copyWith(filteredList: state.countriesResponse?.countries));
+      emit(state.copyWith(filteredList: countryList));
       return;
     }
     var getFilteredList = state.countriesResponse?.countries.where((element) {
@@ -44,10 +58,9 @@ class CountriesCubit extends Cubit<CountriesState> {
               false) ||
           (element.code.toLowerCase().contains(searchKey)));
     }).toList();
+    countryList = _sortList(getFilteredList ?? []);
     emit(state.copyWith(
         searchText: searchKey,
-        filteredList: (searchKey.isEmpty)
-            ? state.countriesResponse?.countries
-            : getFilteredList));
+        filteredList: (searchKey.isEmpty) ? countryList : countryList));
   }
 }

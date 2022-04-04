@@ -19,14 +19,17 @@ class CountriesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         floatingActionButton: FloatingActionButton(
+          tooltip: Strings.searchByCountryCode,
           onPressed: () {
             Utils.showCustomDialog<Country>(
-                    buildContext: context,
-                    dialogUi: BlocProvider(
-                        create: (context) => CountryCubit(
-                            repo: RepositoryProvider.of<GraphQlRepo>(context)),
-                        child: SearchCountryDialogUi()))
-                .then((country) {
+                buildContext: context,
+                dialogUi: RepositoryProvider(
+                  create: (context) => GraphQlRepo(),
+                  child: BlocProvider(
+                      create: (context) => CountryCubit(
+                          repo: RepositoryProvider.of<GraphQlRepo>(context)),
+                      child:  SearchCountryDialogUi()),
+                )).then((country) {
               if (country != null) {
                 Navigator.of(context).push(MaterialPageRoute(
                   builder: (context) => CountryDetailsScreen(country),
@@ -63,7 +66,7 @@ class CountriesPage extends StatelessWidget {
                           size: 26,
                         ),
                       ),
-                      hintText: Strings.search,
+                      hintText: Strings.searchByName,
                       suffixIcon: Visibility(
                         visible: state.searchText?.isNotEmpty ?? false,
                         child: IconButton(
@@ -103,8 +106,8 @@ class CountriesPage extends StatelessWidget {
                   ),
                 ),
                 (state.loading ?? false)
-                    ? Expanded(
-                        child: const Center(
+                    ? const Expanded(
+                        child: Center(
                           child: CircularProgressIndicator(),
                         ),
                       )
@@ -123,9 +126,9 @@ class CountriesPage extends StatelessWidget {
                         : Expanded(
                             child: Center(
                               child: Text(
-                                (state.isSuccess ?? false)
-                                    ? (state.msg ?? Strings.noCountriesFound)
-                                    : Strings.noCountriesFound,
+
+                                    (state.msg == null )? Strings.noCountriesFound
+                                    : state.msg?? '',
                               ),
                             ),
                           ),

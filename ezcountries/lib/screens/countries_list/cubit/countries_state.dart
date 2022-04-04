@@ -31,7 +31,7 @@ class CountriesState extends Equatable {
       searchText: searchText,
       countriesResponse: countriesResponse ?? this.countriesResponse,
       isSuccess: isSuccess ?? this.isSuccess,
-      msg: msg ?? this.msg,
+      msg: msg ,
       loading: loading ?? this.loading,
       filteredList: filteredList ?? this.filteredList,
     );

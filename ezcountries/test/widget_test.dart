@@ -5,12 +5,8 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:ezcountries/feature_response.dart';
-import 'package:ezcountries/src/models/countries_response.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('test demo response', () {
-    CountriesResponse res = CountriesResponse.fromJson(featureCountryResponse);
-  });
+  test('test demo response', () {});
 }

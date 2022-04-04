@@ -1,48 +1,34 @@
-part of 'country_cubit.dart';
+part of 'countries_cubit.dart';
 
-class CountryState extends Equatable {
+class CountriesState extends Equatable {
   final CountriesResponse? countriesResponse;
   final bool? isSuccess;
-
   final String? msg;
-
   final bool? loading;
   final String? searchText;
-
   final List<Country>? filteredList;
-  final Country? selectedCountry;
 
-  const CountryState(
+  const CountriesState(
       {this.countriesResponse,
       this.loading,
       this.isSuccess,
       this.msg,
       this.filteredList,
-      this.selectedCountry,
       this.searchText});
 
   @override
-  List<Object?> get props => [
-        msg,
-        isSuccess,
-        loading,
-        filteredList,
-        countriesResponse,
-        selectedCountry,
-        searchText
-      ];
+  List<Object?> get props =>
+      [msg, isSuccess, loading, filteredList, countriesResponse, searchText];
 
-  CountryState copyWith(
-      {Country? selectedCountry,
-      CountriesResponse? countriesResponse,
+  CountriesState copyWith(
+      {CountriesResponse? countriesResponse,
       bool? isSuccess,
       String? msg,
       bool? loading,
       List<Country>? filteredList,
       String? searchText}) {
-    return CountryState(
+    return CountriesState(
       searchText: searchText,
-      selectedCountry: selectedCountry,
       countriesResponse: countriesResponse ?? this.countriesResponse,
       isSuccess: isSuccess ?? this.isSuccess,
       msg: msg ?? this.msg,

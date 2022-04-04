@@ -1,6 +1,6 @@
 import 'package:ezcountries/graph_ql/graphql_repo.dart';
-import 'package:ezcountries/screens/country/country_cubit/country_cubit.dart';
-import 'package:ezcountries/screens/country/view/country_list_screen.dart';
+import 'package:ezcountries/screens/countries_list/view/country_list_screen.dart';
+import 'package:ezcountries/screens/country/cubit/country_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -19,7 +19,6 @@ class MyApp extends StatelessWidget {
         create: (context) =>
             CountryCubit(repo: RepositoryProvider.of<GraphQlRepo>(context)),
         child: MaterialApp(
-
           theme: ThemeData(
             primarySwatch: Colors.blue,
           ),
@@ -29,4 +28,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

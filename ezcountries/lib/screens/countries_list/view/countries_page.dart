@@ -1,24 +1,38 @@
-import 'dart:developer';
-
+import 'package:ezcountries/graph_ql/graphql_repo.dart';
+import 'package:ezcountries/models/countries_response.dart';
 import 'package:ezcountries/res/app_colors.dart';
 import 'package:ezcountries/res/strings.dart';
 import 'package:ezcountries/res/text_styles.dart';
-import 'package:ezcountries/screens/country/country_cubit/country_cubit.dart';
+import 'package:ezcountries/screens/countries_list/cubit/countries_cubit.dart';
+import 'package:ezcountries/screens/country/cubit/country_cubit.dart';
 import 'package:ezcountries/screens/country/view/country_details_screen.dart';
-import 'package:ezcountries/src/models/countries_response.dart';
+import 'package:ezcountries/screens/country/view/search_country_dialog_ui.dart';
+import 'package:ezcountries/util/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class CountriesScreen extends StatelessWidget {
-  const CountriesScreen({Key? key}) : super(key: key);
+class CountriesPage extends StatelessWidget {
+  const CountriesPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            showSearchDialog(context: context);
+            Utils.showCustomDialog<Country>(
+                    buildContext: context,
+                    dialogUi: BlocProvider(
+                        create: (context) => CountryCubit(
+                            repo: RepositoryProvider.of<GraphQlRepo>(context)),
+                        child: SearchCountryDialogUi()))
+                .then((country) {
+              if (country != null) {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => CountryDetailsScreen(country),
+                ));
+              }
+            });
           },
           child: const Icon(Icons.search),
         ),
@@ -26,16 +40,10 @@ class CountriesScreen extends StatelessWidget {
           centerTitle: true,
           title: const Text(Strings.ezCountries),
         ),
-        body: BlocConsumer<CountryCubit, CountryState>(
-          listener: (context, state) {
-            if (state.selectedCountry != null) {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const CountryDetailsScreen(),
-              ));
-            }
-          },
+        body: BlocBuilder<CountriesCubit, CountriesState>(
           builder: (context, state) {
             return Column(
+              mainAxisSize: MainAxisSize.max,
               children: [
                 Container(
                   margin:
@@ -43,8 +51,8 @@ class CountriesScreen extends StatelessWidget {
                   child: TextFormField(
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     autofocus: false,
-                    controller: (state.searchText?.isEmpty ?? true)
-                        ? TextEditingController(text: state.searchText)
+                    controller: (state.searchText == null)
+                        ? TextEditingController(text: '')
                         : null,
                     decoration: InputDecoration(
                       prefixIcon: IconButton(
@@ -56,11 +64,14 @@ class CountriesScreen extends StatelessWidget {
                         ),
                       ),
                       hintText: Strings.search,
-                      suffixIcon:  Visibility(visible: state.searchText?.isNotEmpty?? false,
+                      suffixIcon: Visibility(
+                        visible: state.searchText?.isNotEmpty ?? false,
                         child: IconButton(
                           padding: const EdgeInsets.all(8),
                           onPressed: () {
-                            context.read<CountryCubit>().filterCountries(searchKey: null);
+                            context
+                                .read<CountriesCubit>()
+                                .filterCountries(searchKey: null);
                           },
                           icon: const Icon(
                             Icons.close,
@@ -83,9 +94,8 @@ class CountriesScreen extends StatelessWidget {
                       fillColor: Colors.white,
                     ),
                     onChanged: (value) {
-                      log('on changed value: $value');
                       context
-                          .read<CountryCubit>()
+                          .read<CountriesCubit>()
                           .filterCountries(searchKey: value.trimLeft());
                     },
                     keyboardType: TextInputType.text,
@@ -93,8 +103,10 @@ class CountriesScreen extends StatelessWidget {
                   ),
                 ),
                 (state.loading ?? false)
-                    ? const Center(
-                        child: CircularProgressIndicator(),
+                    ? Expanded(
+                        child: const Center(
+                          child: CircularProgressIndicator(),
+                        ),
                       )
                     : (state.filteredList != null &&
                             state.filteredList!.isNotEmpty)
@@ -104,16 +116,17 @@ class CountriesScreen extends StatelessWidget {
                                 physics: const ClampingScrollPhysics(),
                                 itemCount: state.filteredList?.length ?? 0,
                                 itemBuilder: (context, index) {
-                                  return _getCountriesRow(
-                                      context,
-                                      state.filteredList?[index] ??
-                                          Country(code: 'IN'),
-                                      index);
+                                  return _getCountriesRow(context,
+                                      state.filteredList![index], index);
                                 }),
                           )
-                        : const Center(
-                            child: Text(
-                              Strings.noCountriesFound,
+                        : Expanded(
+                            child: Center(
+                              child: Text(
+                                (state.isSuccess ?? false)
+                                    ? (state.msg ?? Strings.noCountriesFound)
+                                    : Strings.noCountriesFound,
+                              ),
                             ),
                           ),
               ],
@@ -122,109 +135,13 @@ class CountriesScreen extends StatelessWidget {
         ));
   }
 
-  showSearchDialog({
-    required BuildContext context,
-  }) {
-    TextEditingController _searchController = TextEditingController();
-
-    Dialog searchDialog = Dialog(
-      insetPadding: const EdgeInsets.all(26),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-      child: SizedBox(
-        height: 280,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 25),
-              child: Text(
-                Strings.enterCountryCode,
-                style: dialogHeaderTextStyle,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Expanded(
-                    child: Text(
-                      Strings.code,
-                      textAlign: TextAlign.center,
-                      style: dialogHeaderTextStyle,
-                    ),
-                  ),
-                  //      SizedBox(width: 15),
-                  Expanded(
-                    flex: 2,
-                    child: TextFormField(
-                      maxLength: 2,
-                      controller: _searchController,
-                      textCapitalization: TextCapitalization.characters,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[A-Z]')),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            //   SizedBox(height: 30),
-            Column(
-              children: [
-                Divider(
-                    height: 1,
-                    thickness: 1,
-                    color: appColorGrey.withOpacity(0.5)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Padding(
-                        padding: EdgeInsets.all(10),
-                        child: Text(
-                          Strings.cancel,
-                          style: dialogHeaderTextStyle,
-                        ),
-                      ),
-                    ),
-                    Container(
-                        width: 1,
-                        height: 60 + 3,
-                        color: appColorGrey.withOpacity(0.5)),
-                    InkWell(
-                        onTap: () {
-                          context.read<CountryCubit>().getCountryByCode(
-                              countryCode: _searchController.text);
-                          Navigator.pop(context);
-                        },
-                        child: const Padding(
-                            padding: EdgeInsets.all(10),
-                            child: Text(Strings.search,
-                                style: dialogHeaderTextStyle))),
-                  ],
-                ),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-    return showDialog(
-        builder: (BuildContext context) {
-          return searchDialog;
-        },
-        context: context);
-  }
-
   Widget _getCountriesRow(BuildContext context, Country country, int? index) =>
       GestureDetector(
         onTap: () {
-          context.read<CountryCubit>().selectCountry(country);
+          Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => CountryDetailsScreen(country),
+          ));
+          // context.read<CountriesCubit>().selectCountry(country);
         },
         child: Container(
             width: double.infinity,
@@ -289,23 +206,6 @@ class CountriesScreen extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              /*      Flexible(
-                                child: Row(
-                                  children: [
-                                    const Text(
-                                      Strings.currency,
-                                      style: countryCodeTextStyle,
-                                    ),
-                                    Flexible(
-                                      child: Text(
-                                        country.currency ?? '',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: countryCodeTextStyle,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),*/
                             ],
                           )
                         ],
